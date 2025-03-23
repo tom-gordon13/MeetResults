@@ -29,7 +29,12 @@ interface ScrapingResult {
     text: string;
     nestedResults?: {
         url: string;
-        preText: string[];
+        preText: {
+            fullText: string;
+            summary: string;
+            line2: string;
+            line3: string;
+        }[];
     }[];
 }
 
@@ -153,9 +158,23 @@ export const App = () => {
                                                 <Typography variant="body2" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
                                                     {nested.url}
                                                 </Typography>
+                                                {nested.preText.length > 0 && (
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            mt: 1,
+                                                            color: 'text.primary',
+                                                            fontStyle: 'italic'
+                                                        }}
+                                                    >
+                                                        <div>{nested.preText[0].summary}</div>
+                                                        {nested.preText[0].line2 && <div>{nested.preText[0].line2}</div>}
+                                                        {nested.preText[0].line3 && <div>{nested.preText[0].line3}</div>}
+                                                    </Typography>
+                                                )}
                                             </AccordionSummary>
                                             <AccordionDetails>
-                                                {nested.preText.map((text, preIndex) => (
+                                                {nested.preText.map((content, preIndex) => (
                                                     <Box key={preIndex}>
                                                         {preIndex > 0 && <Divider sx={{ my: 2 }} />}
                                                         <Typography
@@ -169,7 +188,7 @@ export const App = () => {
                                                                 fontFamily: 'monospace'
                                                             }}
                                                         >
-                                                            {text}
+                                                            {content.fullText}
                                                         </Typography>
                                                     </Box>
                                                 ))}

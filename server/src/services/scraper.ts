@@ -17,7 +17,14 @@ interface LinkInfo {
 
 interface NestedResult {
     url: string;
-    preText: string[];
+    preText: PreTagContent[];
+}
+
+interface PreTagContent {
+    fullText: string;
+    summary: string;
+    line2: string;
+    line3: string;
 }
 
 const resolveUrl = (baseUrl: string, path: string): string => {
@@ -28,24 +35,66 @@ const resolveUrl = (baseUrl: string, path: string): string => {
     }
 };
 
-const scrapePreTags = async (url: string): Promise<string[]> => {
+const scrapePreTags = async (url: string): Promise<PreTagContent[]> => {
     try {
         const response = await axios.get(url, {
             responseType: 'text',
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             },
-            timeout: 5000 // 5 second timeout
+            timeout: 5000
         });
 
         const $ = cheerio.load(response.data);
-        const preTags: string[] = [];
+        const preTags: PreTagContent[] = [];
 
         $('pre').each((_, element) => {
-            const text = $(element).text().trim();
-            if (text) {
-                preTags.push(text);
-                console.log(`Found <pre> content at ${url}:`, text);
+            const $pre = $(element);
+            const fullText = $pre.text().trim();
+
+            let summary = '';
+            let line2 = '';
+            let line3 = '';
+            const lines = fullText.split('\n');
+            let equalSignCount = 0;
+            let startIndex = -1;
+
+            // Find the second row of equals signs
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].trim().match(/={10,}/)) {
+                    equalSignCount++;
+                    if (equalSignCount === 2) {
+                        startIndex = i + 1;
+                        break;
+                    }
+                }
+            }
+
+            // Find lines starting with 1, 2 , and 3  after the second equals row
+            if (startIndex !== -1) {
+                for (let i = startIndex; i < lines.length; i++) {
+                    const trimmedLine = lines[i].trim();
+                    if (!summary && trimmedLine.startsWith('1')) {
+                        summary = trimmedLine;
+                    }
+                    if (!line2 && trimmedLine.startsWith('2 ')) {
+                        line2 = trimmedLine;
+                    }
+                    if (!line3 && trimmedLine.startsWith('3 ')) {
+                        line3 = trimmedLine;
+                    }
+                    if (summary && line2 && line3) break;
+                }
+            }
+
+            if (fullText) {
+                preTags.push({
+                    fullText,
+                    summary: summary || fullText.slice(0, 100) + '...',
+                    line2: line2 || '',
+                    line3: line3 || ''
+                });
+                console.log(`Found <pre> content at ${url}:`, { fullText, summary, line2, line3 });
             }
         });
 
