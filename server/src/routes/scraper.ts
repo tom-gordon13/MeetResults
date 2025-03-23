@@ -20,6 +20,16 @@ router.post('/scrape', async (req: Request, res: Response) => {
         }
 
         const result = await scrapeWebsite(url);
+
+        // Log nested results
+        if (result.nestedResults) {
+            console.log('Nested scraping results:');
+            result.nestedResults.forEach(nested => {
+                console.log(`\nFrom ${nested.url}:`);
+                nested.preText.forEach(text => console.log('Pre tag content:', text));
+            });
+        }
+
         res.json(result);
     } catch (error: unknown) {
         console.error('Scraping error:', error);
