@@ -17,6 +17,7 @@ import {
     Divider
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import axios from 'axios';
 
 interface ScrapingResult {
@@ -167,9 +168,22 @@ export const App = () => {
                                                             fontStyle: 'italic'
                                                         }}
                                                     >
-                                                        <div>{nested.preText[0].summary}</div>
-                                                        {nested.preText[0].line2 && <div>{nested.preText[0].line2}</div>}
-                                                        {nested.preText[0].line3 && <div>{nested.preText[0].line3}</div>}
+                                                        <div>
+                                                            <EmojiEventsIcon sx={{ color: 'gold', verticalAlign: 'middle', mr: 1 }} />
+                                                            {nested.preText[0].summary}
+                                                        </div>
+                                                        {nested.preText[0].line2 && (
+                                                            <div>
+                                                                <EmojiEventsIcon sx={{ color: 'silver', verticalAlign: 'middle', mr: 1 }} />
+                                                                {nested.preText[0].line2}
+                                                            </div>
+                                                        )}
+                                                        {nested.preText[0].line3 && (
+                                                            <div>
+                                                                <EmojiEventsIcon sx={{ color: '#cd7f32', verticalAlign: 'middle', mr: 1 }} />
+                                                                {nested.preText[0].line3}
+                                                            </div>
+                                                        )}
                                                     </Typography>
                                                 )}
                                             </AccordionSummary>
