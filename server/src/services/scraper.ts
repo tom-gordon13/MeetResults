@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { URL } from 'url';
+import { parseSwimmerResults } from './parseResults';
 
 export interface ScrapingResult {
     title: string;
@@ -18,6 +19,7 @@ interface LinkInfo {
 interface NestedResult {
     url: string;
     preText: PreTagContent[];
+    swimmerResults?: SwimmerResult[];
 }
 
 interface PreTagContent {
@@ -25,6 +27,12 @@ interface PreTagContent {
     summary: string;
     line2: string;
     line3: string;
+}
+
+interface SwimmerResult {
+    name: string;
+    time: string;
+    splits: number[];
 }
 
 const resolveUrl = (baseUrl: string, path: string): string => {
@@ -94,7 +102,6 @@ const scrapePreTags = async (url: string): Promise<PreTagContent[]> => {
                     line2: line2 || '',
                     line3: line3 || ''
                 });
-                console.log(`Found <pre> content at ${url}:`, { fullText, summary, line2, line3 });
             }
         });
 
@@ -117,6 +124,7 @@ export const scrapeWebsite = async (url: string, depth = 0): Promise<ScrapingRes
         const $ = cheerio.load(response.data);
         const links: LinkInfo[] = [];
         const nestedResults: NestedResult[] = [];
+        let linkCount = 0;
 
         $('a').each((_, element) => {
             const href = $(element).attr('href');
@@ -124,22 +132,28 @@ export const scrapeWebsite = async (url: string, depth = 0): Promise<ScrapingRes
             if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
                 const absoluteUrl = resolveUrl(url, href);
                 if (absoluteUrl) {
-                    links.push({
-                        url: absoluteUrl,
-                        text: text || absoluteUrl
-                    });
+                    linkCount++;
+                    if (linkCount > 2) {
+                        links.push({
+                            url: absoluteUrl,
+                            text: text || absoluteUrl
+                        });
+                    }
                 }
             }
         });
 
         if (depth === 0) {
-            const firstFiveLinks = links.slice(0, 5);
+            const firstFiveLinks = links.slice(0, 38);
             for (const link of firstFiveLinks) {
                 const preTexts = await scrapePreTags(link.url);
+                const swimmerResults = parseSwimmerResults(preTexts.map(pt => pt.fullText).join('\n'));
+                console.log({ swimmerResults })
                 if (preTexts.length > 0) {
                     nestedResults.push({
                         url: link.url,
-                        preText: preTexts
+                        preText: preTexts,
+                        swimmerResults
                     });
                 }
             }

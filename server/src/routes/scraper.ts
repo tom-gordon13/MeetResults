@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { scrapeWebsite } from '../services/scraper';
+import { parseSwimmerResults } from '../services/parseResults';
 
 const router = Router();
 
@@ -21,16 +22,10 @@ router.post('/scrape', async (req: Request, res: Response) => {
 
         const result = await scrapeWebsite(url);
 
-        // Log nested results
-        if (result.nestedResults) {
-            console.log('Nested scraping results:');
-            result.nestedResults.forEach(nested => {
-                console.log(`\nFrom ${nested.url}:`);
-                nested.preText.forEach(text => console.log('Pre tag content:', text));
-            });
-        }
+        // Parse the HTML content for swimmer results
+        const swimmerResults = parseSwimmerResults(result.text);
 
-        res.json(result);
+        res.json({ ...result, swimmerResults });
     } catch (error: unknown) {
         console.error('Scraping error:', error);
         const message = error instanceof Error ? error.message : 'Internal server error';
