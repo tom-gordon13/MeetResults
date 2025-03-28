@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { URL } from 'url';
 import { parseSwimmerResults } from './parseResults';
+import { parseRaceResults } from './parseRaceResults';
 
 export interface ScrapingResult {
     title: string;
@@ -148,7 +149,7 @@ export const scrapeWebsite = async (url: string, depth = 0): Promise<ScrapingRes
             for (const link of firstFiveLinks) {
                 const preTexts = await scrapePreTags(link.url);
                 const swimmerResults = parseSwimmerResults(preTexts.map(pt => pt.fullText).join('\n'));
-                console.log({ swimmerResults })
+                const eventResults = parseRaceResults(link.url)
                 if (preTexts.length > 0) {
                     nestedResults.push({
                         url: link.url,

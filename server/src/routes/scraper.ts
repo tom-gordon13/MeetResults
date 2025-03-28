@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { scrapeWebsite } from '../services/scraper';
 import { parseSwimmerResults } from '../services/parseResults';
+import { parseRaceResults } from '../services/parseRaceResults';
 
 const router = Router();
 
@@ -22,10 +23,7 @@ router.post('/scrape', async (req: Request, res: Response) => {
 
         const result = await scrapeWebsite(url);
 
-        // Parse the HTML content for swimmer results
-        const swimmerResults = parseSwimmerResults(result.text);
-
-        res.json({ ...result, swimmerResults });
+        res.json({ ...result });
     } catch (error: unknown) {
         console.error('Scraping error:', error);
         const message = error instanceof Error ? error.message : 'Internal server error';

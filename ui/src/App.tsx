@@ -14,7 +14,8 @@ import {
     Accordion,
     AccordionSummary,
     AccordionDetails,
-    Divider
+    Divider,
+    Chip
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -101,114 +102,93 @@ export const App = () => {
                                 Results
                             </Typography>
 
-                            <Typography variant="h6" gutterBottom>
-                                Title:
-                            </Typography>
-                            <Typography paragraph color="text.secondary">
-                                {result.title}
-                            </Typography>
-
-                            {result.description && (
-                                <>
-                                    <Typography variant="h6" gutterBottom>
-                                        Description:
-                                    </Typography>
-                                    <Typography paragraph color="text.secondary">
-                                        {result.description}
-                                    </Typography>
-                                </>
-                            )}
-
-                            <Typography variant="h6" gutterBottom>
-                                Links found: {result.links.length}
-                            </Typography>
-
-                            <List sx={{ bgcolor: 'background.paper', borderRadius: 1, mb: 4 }}>
-                                {result.links.slice(0, 5).map((link, index) => (
-                                    <ListItem key={index} divider={index !== 4}>
-                                        <ListItemText
-                                            primary={link.text}
-                                            secondary={link.url}
-                                            sx={{
-                                                '& .MuiListItemText-primary': { fontWeight: 500 },
-                                                '& .MuiListItemText-secondary': { wordBreak: 'break-all' }
-                                            }}
-                                        />
-                                    </ListItem>
-                                ))}
-                            </List>
-
                             {result.nestedResults && result.nestedResults.length > 0 && (
                                 <>
                                     <Typography variant="h6" gutterBottom>
-                                        Pre Tag Content
+                                        Events
                                     </Typography>
-                                    {result.nestedResults.map((nested, index) => (
-                                        <Accordion key={index} sx={{ mb: 1 }}>
-                                            <AccordionSummary
-                                                expandIcon={<ExpandMoreIcon />}
-                                                sx={{
-                                                    '& .MuiAccordionSummary-content': {
-                                                        flexDirection: 'column'
-                                                    }
-                                                }}
-                                            >
-                                                <Typography fontWeight={500}>
-                                                    {result.links[index]?.text || 'Link Content'}
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
-                                                    {nested.url}
-                                                </Typography>
-                                                {nested.preText.length > 0 && (
-                                                    <Typography
-                                                        variant="body2"
-                                                        sx={{
-                                                            mt: 1,
-                                                            color: 'text.primary',
-                                                            fontStyle: 'italic'
-                                                        }}
-                                                    >
-                                                        <div>
-                                                            <EmojiEventsIcon sx={{ color: 'gold', verticalAlign: 'middle', mr: 1 }} />
-                                                            {nested.preText[0].summary}
-                                                        </div>
-                                                        {nested.preText[0].line2 && (
-                                                            <div>
-                                                                <EmojiEventsIcon sx={{ color: 'silver', verticalAlign: 'middle', mr: 1 }} />
-                                                                {nested.preText[0].line2}
-                                                            </div>
+                                    {result.nestedResults.map((nested, index) => {
+                                        const isPreliminaries = nested.preText.some(content => content.fullText.includes('=== Preliminaries ==='));
+                                        const isChampionshipFinal = nested.preText.some(content => content.fullText.includes('=== Championship Final ==='));
+
+                                        return (
+                                            <Accordion key={index} sx={{ mb: 1 }}>
+                                                <AccordionSummary
+                                                    expandIcon={<ExpandMoreIcon />}
+                                                    sx={{
+                                                        '& .MuiAccordionSummary-content': {
+                                                            flexDirection: 'column'
+                                                        }
+                                                    }}
+                                                >
+                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                        <Typography fontWeight={500} sx={{ mr: 1 }}>
+                                                            {result.links[index]?.text || 'Link Content'}
+                                                        </Typography>
+                                                        {isPreliminaries && (
+                                                            <Chip label="Preliminaries" color="primary" size="small" />
                                                         )}
-                                                        {nested.preText[0].line3 && (
-                                                            <div>
-                                                                <EmojiEventsIcon sx={{ color: '#cd7f32', verticalAlign: 'middle', mr: 1 }} />
-                                                                {nested.preText[0].line3}
-                                                            </div>
+                                                        {isChampionshipFinal && (
+                                                            <Chip label="Championship Final" color="secondary" size="small" />
                                                         )}
+                                                        {!isPreliminaries && !isChampionshipFinal && (
+                                                            <Chip label="Event Not Started" color="default" size="small" />
+                                                        )}
+                                                    </Box>
+                                                    <Typography variant="body2" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
+                                                        {nested.url}
                                                     </Typography>
-                                                )}
-                                            </AccordionSummary>
-                                            <AccordionDetails>
-                                                {nested.preText.map((content, preIndex) => (
-                                                    <Box key={preIndex}>
-                                                        {preIndex > 0 && <Divider sx={{ my: 2 }} />}
+                                                    {isChampionshipFinal && nested.preText.length > 0 && (
                                                         <Typography
-                                                            component="pre"
+                                                            variant="body2"
                                                             sx={{
-                                                                whiteSpace: 'pre-wrap',
-                                                                wordBreak: 'break-word',
-                                                                bgcolor: 'grey.100',
-                                                                p: 2,
-                                                                borderRadius: 1,
-                                                                fontFamily: 'monospace'
+                                                                mt: 1,
+                                                                color: 'text.primary',
+                                                                fontStyle: 'italic'
                                                             }}
                                                         >
-                                                            {content.fullText}
+                                                            <div>
+                                                                <EmojiEventsIcon sx={{ color: 'gold', verticalAlign: 'middle', mr: 1 }} />
+                                                                {nested.preText[0].summary}
+                                                            </div>
+                                                            {nested.preText[0].line2 && (
+                                                                <div>
+                                                                    <EmojiEventsIcon sx={{ color: 'silver', verticalAlign: 'middle', mr: 1 }} />
+                                                                    {nested.preText[0].line2}
+                                                                </div>
+                                                            )}
+                                                            {nested.preText[0].line3 && (
+                                                                <div>
+                                                                    <EmojiEventsIcon sx={{ color: '#cd7f32', verticalAlign: 'middle', mr: 1 }} />
+                                                                    {nested.preText[0].line3}
+                                                                </div>
+                                                            )}
                                                         </Typography>
-                                                    </Box>
-                                                ))}
-                                            </AccordionDetails>
-                                        </Accordion>
-                                    ))}
+                                                    )}
+                                                </AccordionSummary>
+                                                <AccordionDetails>
+                                                    {nested.preText.map((content, preIndex) => (
+                                                        <Box key={preIndex}>
+                                                            {preIndex > 0 && <Divider sx={{ my: 2 }} />}
+                                                            <Typography
+                                                                component="pre"
+                                                                sx={{
+                                                                    whiteSpace: 'pre-wrap',
+                                                                    wordBreak: 'break-word',
+                                                                    bgcolor: 'grey.100',
+                                                                    p: 2,
+                                                                    borderRadius: 1,
+                                                                    fontFamily: 'monospace'
+                                                                }}
+                                                            >
+                                                                {content.fullText}
+                                                            </Typography>
+                                                        </Box>
+                                                    ))}
+                                                </AccordionDetails>
+                                            </Accordion>
+                                        );
+                                    })}
                                 </>
                             )}
                         </Box>
