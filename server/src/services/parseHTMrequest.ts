@@ -14,7 +14,7 @@ interface IndividualResult {
     year?: string;
     entryTime?: string,
     finalTime?: string;
-    splits?: number[];
+    splits?: string[];
     reactionTime?: number;
 }
 
@@ -165,6 +165,27 @@ const parseIndividualResult = (chunk: string): IndividualResult => {
         const reactionTimeMatch = chunk.match(/r:\s*([+-][\d.]+)/);
         const reactionTime = reactionTimeMatch ? parseFloat(reactionTimeMatch[1]) : undefined;
 
+        const splits: string[] = [];
+        const splitPattern = /(\d+\.\d{2})|\((\d+\.\d{2})\)/g; // Matches first normal split + numbers in parentheses
+        let foundFirstSplit = false; // Track when the first split is encountered
+
+        let splitMatch: RegExpExecArray | null;
+        while ((splitMatch = splitPattern.exec(chunk)) !== null) {
+            if (!foundFirstSplit) {
+                // First number after reaction time (either inside or outside ())
+                splits.push(splitMatch[1] || splitMatch[2]);
+                foundFirstSplit = true;
+            } else if (splitMatch[2]) {
+                // Only capture numbers inside parentheses after the first split
+                splits.push(splitMatch[2]);
+            }
+
+            // Stop if we encounter a number that looks like a new swimmer place value
+            if (match.index && splitMatch.index > match.index && chunk.substring(splitMatch.index).match(/^\d+\s/)) {
+                break;
+            }
+        }
+
         return {
             place: number,
             swimmerName,
@@ -172,7 +193,8 @@ const parseIndividualResult = (chunk: string): IndividualResult => {
             team,
             entryTime,
             finalTime,
-            reactionTime
+            reactionTime,
+            splits
         };
     }
     return {};
