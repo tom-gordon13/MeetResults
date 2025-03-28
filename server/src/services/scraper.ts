@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import { URL } from 'url';
 import { parseSwimmerResults } from './parseResults';
 import { parseRaceResults } from './parseRaceResults';
+import { parseHTMRequest } from './parseHTMrequest';
 
 export interface ScrapingResult {
     title: string;
@@ -145,8 +146,9 @@ export const scrapeWebsite = async (url: string, depth = 0): Promise<ScrapingRes
         });
 
         if (depth === 0) {
-            const firstFiveLinks = links.slice(0, 38);
+            const firstFiveLinks = links.slice(2, 3);
             for (const link of firstFiveLinks) {
+                parseHTMRequest(link.url)
                 const preTexts = await scrapePreTags(link.url);
                 const swimmerResults = parseSwimmerResults(preTexts.map(pt => pt.fullText).join('\n'));
                 const eventResults = parseRaceResults(link.url)

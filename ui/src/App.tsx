@@ -110,6 +110,7 @@ export const App = () => {
                                     {result.nestedResults.map((nested, index) => {
                                         const isPreliminaries = nested.preText.some(content => content.fullText.includes('=== Preliminaries ==='));
                                         const isChampionshipFinal = nested.preText.some(content => content.fullText.includes('=== Championship Final ==='));
+                                        const isSwimOff = nested.preText.some(content => content.fullText.includes('=== - Swim-off ==='));
 
                                         return (
                                             <Accordion key={index} sx={{ mb: 1 }}>
@@ -131,14 +132,17 @@ export const App = () => {
                                                         {isChampionshipFinal && (
                                                             <Chip label="Championship Final" color="secondary" size="small" />
                                                         )}
-                                                        {!isPreliminaries && !isChampionshipFinal && (
+                                                        {isSwimOff && (
+                                                            <Chip label="Swim Off" color="warning" size="small" />
+                                                        )}
+                                                        {!isPreliminaries && !isChampionshipFinal && !isSwimOff && (
                                                             <Chip label="Event Not Started" color="default" size="small" />
                                                         )}
                                                     </Box>
                                                     <Typography variant="body2" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
                                                         {nested.url}
                                                     </Typography>
-                                                    {isChampionshipFinal && nested.preText.length > 0 && (
+                                                    {(isChampionshipFinal || isSwimOff) && nested.preText.length > 0 && (
                                                         <Typography
                                                             variant="body2"
                                                             sx={{

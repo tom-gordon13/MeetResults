@@ -41,6 +41,6 @@ export const parseRaceResults = async (url: string) => {
         results.push({ place, name, year, school, time, splits });
     }
 
-    console.log(results);
+    // console.log(results);
     return results;
 };
