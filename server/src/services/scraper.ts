@@ -148,7 +148,7 @@ export const scrapeWebsite = async (url: string, depth = 0): Promise<ScrapingRes
         });
 
         if (depth === 0) {
-            const firstFiveLinks = links.slice(2, 5);
+            const firstFiveLinks = links.slice(0, 5);
             for (const link of firstFiveLinks) {
                 console.log({ link })
                 // parseHTMRequest(link.url)
