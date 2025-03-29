@@ -235,7 +235,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results, isMobile = false }
                                     color="primary"
                                 />
                             }
-                            label={globalOpen ? "Hide Splits" : "Show Splits"}
+                            label={globalOpen ? "Hide All Splits" : "Show All Splits"}
                             labelPlacement="start"
                         />
                     </Box>

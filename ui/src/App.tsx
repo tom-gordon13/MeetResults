@@ -14,7 +14,11 @@ import {
     Divider,
     Chip,
     useMediaQuery,
-    useTheme
+    useTheme,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -40,6 +44,11 @@ interface ScrapingResult {
     }[];
 }
 
+interface MeetLink {
+    text: string;
+    url: string;
+}
+
 export const App = () => {
     const [url, setUrl] = useState<string>('');
     const [result, setResult] = useState<ScrapingResult | null>(null);
@@ -47,10 +56,30 @@ export const App = () => {
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const [expandedPanel, setExpandedPanel] = useState<number | false>(false);
+    const [popularMeets, setPopularMeets] = useState<MeetLink[]>([]);
+    const [loadingLinks, setLoadingLinks] = useState(true);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [isScrolled, setIsScrolled] = useState(false);
     const accordionRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    // Fetch links from swimmeetresults.tech when component mounts
+    useEffect(() => {
+        const fetchLinks = async () => {
+            try {
+                setLoadingLinks(true);
+                const response = await axios.get('/api/fetch-links');
+                setPopularMeets(response.data.links.slice(0, 5));
+            } catch (err) {
+                console.error('Failed to fetch links:', err);
+                setPopularMeets([]);
+            } finally {
+                setLoadingLinks(false);
+            }
+        };
+
+        fetchLinks();
+    }, []);
 
     // Handle scroll events to determine if we need to make the header sticky
     useEffect(() => {
@@ -68,11 +97,11 @@ export const App = () => {
         };
     }, [expandedPanel]);
 
-    const handleScrape = async () => {
+    const handleScrape = async (scrapeUrl = url) => {
         try {
             setLoading(true);
             setError('');
-            const response = await axios.post('/api/scrape', { url });
+            const response = await axios.post('/api/scrape', { url: scrapeUrl });
             setResult(response.data);
             setEventList(response.data.eventResults);
             console.log(response.data.eventResults);
@@ -92,6 +121,13 @@ export const App = () => {
         setIsScrolled(false); // Reset scroll state when changing panels
     };
 
+    const handleLinkClick = (linkUrl: string) => {
+        // Append evtindex.htm to the URL
+        const scrapeUrl = `${linkUrl}/evtindex.htm`;
+        setUrl(scrapeUrl); // Update the input field
+        handleScrape(scrapeUrl); // Scrape the clicked link
+    };
+
     return (
         <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 4 }}>
             <Container
@@ -108,7 +144,7 @@ export const App = () => {
                     }}
                 >
                     <Typography variant="h1" gutterBottom align="center" color="primary">
-                        Events Scraper
+                        Swim Meet Results
                     </Typography>
 
                     <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
@@ -122,12 +158,37 @@ export const App = () => {
                         />
                         <Button
                             variant="contained"
-                            onClick={handleScrape}
+                            onClick={() => handleScrape()}
                             disabled={loading || !url}
                             sx={{ minWidth: 100 }}
                         >
                             {loading ? <CircularProgress size={24} /> : 'Scrape'}
                         </Button>
+                    </Box>
+
+                    {/* Popular Meets Section */}
+                    <Box sx={{ mb: 4 }}>
+                        <Typography variant="h6" gutterBottom>
+                            Popular Meets
+                        </Typography>
+                        {loadingLinks ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                                <CircularProgress size={24} />
+                            </Box>
+                        ) : (
+                            <List>
+                                {popularMeets.map((meet, index) => (
+                                    <ListItem key={index} disablePadding>
+                                        <ListItemButton
+                                            onClick={() => handleLinkClick(meet.url)}
+                                            disabled={loading}
+                                        >
+                                            <ListItemText primary={meet.text} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        )}
                     </Box>
 
                     {error && (
@@ -188,7 +249,11 @@ export const App = () => {
                                                 }}
                                             >
                                                 <Box>
-                                                    <ResultsTable results={currEvent.eventResults} isMobile={isMobile} />
+                                                    {currEvent.eventInfo.isRelay ?
+                                                        <Typography>
+                                                            Relays unavailable at this time!
+                                                        </Typography>
+                                                        : <ResultsTable results={currEvent.eventResults} isMobile={isMobile} />}
                                                 </Box>
                                             </AccordionDetails>
                                         </Accordion>

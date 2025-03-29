@@ -16,7 +16,8 @@
         "cheerio": "^1.0.0-rc.12",
         "cors": "^2.8.5",
         "dotenv": "^16.0.3",
-        "express": "^4.18.2"
+        "express": "^4.18.2",
+        "puppeteer": "^24.4.0"
     },
     "devDependencies": {
         "@types/axios": "^0.14.4",
