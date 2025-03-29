@@ -6,20 +6,20 @@ import {
     Button,
     Typography,
     Paper,
-    List,
-    ListItem,
-    ListItemText,
     Alert,
     CircularProgress,
     Accordion,
     AccordionSummary,
     AccordionDetails,
     Divider,
-    Chip
+    Chip,
+    useMediaQuery,
+    useTheme
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import axios from 'axios';
+import ResultsTable from './components/ResultsTable';
 
 interface ScrapingResult {
     title: string;
@@ -43,8 +43,11 @@ interface ScrapingResult {
 export const App = () => {
     const [url, setUrl] = useState<string>('');
     const [result, setResult] = useState<ScrapingResult | null>(null);
+    const [eventList, setEventList] = useState<any[] | null>(null);
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState(false);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const handleScrape = async () => {
         try {
@@ -52,6 +55,8 @@ export const App = () => {
             setError('');
             const response = await axios.post('/api/scrape', { url });
             setResult(response.data);
+            setEventList(response.data.eventResults)
+            console.log(response.data.eventResults)
         } catch (err: unknown) {
             const error = axios.isAxiosError(err)
                 ? err.response?.data?.error || err.message
@@ -65,8 +70,19 @@ export const App = () => {
 
     return (
         <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 4 }}>
-            <Container maxWidth="md">
-                <Paper elevation={3} sx={{ p: 4 }}>
+            <Container
+                maxWidth="md"
+                sx={{
+                    px: isMobile ? 0 : 2
+                }}
+            >
+                <Paper
+                    elevation={3}
+                    sx={{
+                        p: isMobile ? 2 : 4,
+                        borderRadius: isMobile ? 0 : 1
+                    }}
+                >
                     <Typography variant="h1" gutterBottom align="center" color="primary">
                         Web Scraper
                     </Typography>
@@ -112,8 +128,22 @@ export const App = () => {
                                         const isChampionshipFinal = nested.preText.some(content => content.fullText.includes('=== Championship Final ==='));
                                         const isSwimOff = nested.preText.some(content => content.fullText.includes('=== - Swim-off ==='));
 
+                                        // Only show if we have a corresponding event
+                                        const currEvent = eventList && eventList[index];
+                                        if (!currEvent) return null;
+
                                         return (
-                                            <Accordion key={index} sx={{ mb: 1 }}>
+                                            <Accordion
+                                                key={index}
+                                                sx={{
+                                                    mb: 1,
+                                                    borderRadius: isMobile ? 0 : 1,
+                                                    ...(isMobile && {
+                                                        mx: -2, // Negative margin to extend to screen edges
+                                                        width: 'calc(100% + 16px)' // Adjust width to account for negative margins
+                                                    })
+                                                }}
+                                            >
                                                 <AccordionSummary
                                                     expandIcon={<ExpandMoreIcon />}
                                                     sx={{
@@ -170,25 +200,27 @@ export const App = () => {
                                                         </Typography>
                                                     )}
                                                 </AccordionSummary>
-                                                <AccordionDetails>
-                                                    {nested.preText.map((content, preIndex) => (
-                                                        <Box key={preIndex}>
-                                                            {preIndex > 0 && <Divider sx={{ my: 2 }} />}
-                                                            <Typography
-                                                                component="pre"
-                                                                sx={{
-                                                                    whiteSpace: 'pre-wrap',
-                                                                    wordBreak: 'break-word',
-                                                                    bgcolor: 'grey.100',
-                                                                    p: 2,
-                                                                    borderRadius: 1,
-                                                                    fontFamily: 'monospace'
-                                                                }}
-                                                            >
-                                                                {content.fullText}
-                                                            </Typography>
-                                                        </Box>
-                                                    ))}
+                                                <AccordionDetails
+                                                    sx={{
+                                                        p: isMobile ? 0 : 2
+                                                    }}
+                                                >
+                                                    <Box>
+                                                        <Typography
+                                                            component="pre"
+                                                            sx={{
+                                                                whiteSpace: 'pre-wrap',
+                                                                wordBreak: 'break-word',
+                                                                bgcolor: 'grey.100',
+                                                                p: isMobile ? 0 : 2,
+                                                                borderRadius: isMobile ? 0 : 1,
+                                                                fontFamily: 'monospace'
+                                                            }}
+                                                        >
+                                                            {currEvent.eventInfo.eventName}
+                                                            <ResultsTable results={currEvent.eventResults} isMobile={isMobile} />
+                                                        </Typography>
+                                                    </Box>
                                                 </AccordionDetails>
                                             </Accordion>
                                         );

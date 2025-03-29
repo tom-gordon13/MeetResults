@@ -22,6 +22,7 @@ router.post('/scrape', async (req: Request, res: Response) => {
         }
 
         const result = await scrapeWebsite(url);
+        console.log(result)
 
         res.json({ ...result });
     } catch (error: unknown) {

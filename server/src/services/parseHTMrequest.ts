@@ -18,14 +18,28 @@ interface IndividualResult {
     reactionTime?: number;
 }
 
-export const parseHTMRequest = async (url: string): Promise<void> => {
+interface EventDetails {
+    eventInfo: EventHeader,
+    eventResults: IndividualResult[]
+}
+
+const fallbackHeader = {
+    eventNumber: 1,
+    eventName: 'fakeEvent',
+    eventDistance: 500,
+    isRelay: false
+}
+
+export const parseHTMRequest = async (url: string): Promise<any> => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+
+    let eventResults: any[] = []
 
     try {
         await page.setRequestInterception(true);
 
-        page.on('request', (request) => {
+        page.on('request', (request: any) => {
             if (request.url().includes('.htm')) {
                 console.log(`Request URL: ${request.url()}`);
                 request.continue();
@@ -34,20 +48,27 @@ export const parseHTMRequest = async (url: string): Promise<void> => {
             }
         });
 
-        page.on('response', async (response) => {
-            if (response.url().includes('.htm')) {
-                const responseBody = await response.text();
-                const eventHeader: EventHeader | null = extractHeader(responseBody);
-                console.log(`Header from ${response.url()}:`, eventHeader);
-                if (eventHeader) {
-                    const results = extractResults(responseBody, eventHeader);
-                    console.log(`Results from ${response.url()}:`, results);
+        const responsePromise = new Promise<EventDetails>((resolve) => {
+            page.on('response', async (response: any) => {
+                if (response.url().includes('.htm')) {
+                    const responseBody = await response.text();
+                    const eventInfo: EventHeader | null = extractHeader(responseBody);
+                    const eventResults: IndividualResult[] = extractResults(responseBody, eventInfo || fallbackHeader);
+                    const eventDetails: EventDetails = {
+                        eventInfo: eventInfo || fallbackHeader,
+                        eventResults: eventResults
+                    }
+                    resolve(eventDetails);
                 }
-                await browser.close();
-            }
+            });
         });
 
         await page.goto(url, { waitUntil: 'networkidle2' });
+        const eventDetails = await responsePromise;
+
+
+        await browser.close();
+        return eventDetails;
     } catch (error) {
         console.error(`Failed to capture .htm request for ${url}:`, error);
         await browser.close();
@@ -116,7 +137,7 @@ const extractResults = (content: string, eventHeader: EventHeader): IndividualRe
                     // Process the current chunk
                     const result = parseIndividualResult(currentChunk.join('\n'));
                     results.push(result);
-                    console.log(result);
+                    // console.log(result);
                 }
                 currentChunk = [line]; // Start a new chunk
             } else {
@@ -128,7 +149,7 @@ const extractResults = (content: string, eventHeader: EventHeader): IndividualRe
         if (currentChunk.length > 0) {
             const result = parseIndividualResult(currentChunk.join('\n'));
             results.push(result);
-            console.log(result);
+            // console.log(result);
         }
     }
 

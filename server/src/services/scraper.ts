@@ -11,6 +11,7 @@ export interface ScrapingResult {
     links: LinkInfo[];
     text: string;
     nestedResults?: NestedResult[];
+    eventResults: object[]
 }
 
 interface LinkInfo {
@@ -126,6 +127,7 @@ export const scrapeWebsite = async (url: string, depth = 0): Promise<ScrapingRes
         const $ = cheerio.load(response.data);
         const links: LinkInfo[] = [];
         const nestedResults: NestedResult[] = [];
+        let eventResults: object[] = []
         let linkCount = 0;
 
         $('a').each((_, element) => {
@@ -146,12 +148,15 @@ export const scrapeWebsite = async (url: string, depth = 0): Promise<ScrapingRes
         });
 
         if (depth === 0) {
-            const firstFiveLinks = links.slice(2, 3);
+            const firstFiveLinks = links.slice(2, 5);
             for (const link of firstFiveLinks) {
-                parseHTMRequest(link.url)
+                console.log({ link })
+                // parseHTMRequest(link.url)
+                const singleEventResults = await parseHTMRequest(link.url)
+                eventResults.push(singleEventResults)
                 const preTexts = await scrapePreTags(link.url);
                 const swimmerResults = parseSwimmerResults(preTexts.map(pt => pt.fullText).join('\n'));
-                const eventResults = parseRaceResults(link.url)
+                // const eventResults = parseRaceResults(link.url)
                 if (preTexts.length > 0) {
                     nestedResults.push({
                         url: link.url,
@@ -167,7 +172,8 @@ export const scrapeWebsite = async (url: string, depth = 0): Promise<ScrapingRes
             description: $('meta[name="description"]').attr('content'),
             links,
             text: $('body').text().trim(),
-            ...(depth === 0 && nestedResults.length > 0 ? { nestedResults } : {})
+            ...(depth === 0 && nestedResults.length > 0 ? { nestedResults } : {}),
+            eventResults
         };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Failed to scrape website';
