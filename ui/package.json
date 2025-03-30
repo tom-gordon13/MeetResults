@@ -41,5 +41,5 @@
             "last 1 safari version"
         ]
     },
-    "proxy": "http://localhost:3000"
+    "proxy": "https://ver6uzdk4j.execute-api.us-west-1.amazonaws.com/dev"
 }

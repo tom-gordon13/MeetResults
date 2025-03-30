@@ -5,7 +5,7 @@ import { parseRaceResults } from '../services/parseRaceResults';
 
 const router = Router();
 
-router.post('/scrape', async (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
     try {
         const { url } = req.body;
         console.log('Scraping URL:', url);

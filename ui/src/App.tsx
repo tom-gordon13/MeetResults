@@ -25,6 +25,8 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import axios from 'axios';
 import ResultsTable from './components/ResultsTable';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+
 interface ScrapingResult {
     title: string;
     description?: string;
@@ -65,10 +67,21 @@ export const App = () => {
 
     // Fetch links from swimmeetresults.tech when component mounts
     useEffect(() => {
+        const testRoute = async () => {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/meet-results-api`);
+                console.log(response)
+            } catch (err) {
+                console.error('Failed to test:', err);
+            } finally {
+            }
+        };
+
+        testRoute();
         const fetchLinks = async () => {
             try {
                 setLoadingLinks(true);
-                const response = await axios.get('/api/fetch-links');
+                const response = await axios.get(`${API_BASE_URL}/meet-results-api/fetch-links`);
                 setPopularMeets(response.data.links.slice(0, 5));
             } catch (err) {
                 console.error('Failed to fetch links:', err);
@@ -101,7 +114,7 @@ export const App = () => {
         try {
             setLoading(true);
             setError('');
-            const response = await axios.post('/api/scrape', { url: scrapeUrl });
+            const response = await axios.post(`${API_BASE_URL}/meet-results-api/scrape`, { url: scrapeUrl });
             setResult(response.data);
             setEventList(response.data.eventResults);
             console.log(response.data.eventResults);
