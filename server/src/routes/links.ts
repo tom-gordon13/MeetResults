@@ -4,7 +4,8 @@ import * as cheerio from 'cheerio';
 
 const router = Router();
 
-router.get('/fetch-links', async (req: Request, res: Response) => {
+// router.get('/fetch-links', async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
     try {
         const response = await axios.get('https://swimmeetresults.tech/', {
             headers: {

@@ -39,7 +39,8 @@ const express_1 = require("express");
 const axios_1 = __importDefault(require("axios"));
 const cheerio = __importStar(require("cheerio"));
 const router = (0, express_1.Router)();
-router.get('/fetch-links', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// router.get('/fetch-links', async (req: Request, res: Response) => {
+router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const response = yield axios_1.default.get('https://swimmeetresults.tech/', {
             headers: {

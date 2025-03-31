@@ -67,21 +67,11 @@ export const App = () => {
 
     // Fetch links from swimmeetresults.tech when component mounts
     useEffect(() => {
-        const testRoute = async () => {
-            try {
-                const response = await axios.get(`${API_BASE_URL}/meet-results-api`);
-                console.log(response)
-            } catch (err) {
-                console.error('Failed to test:', err);
-            } finally {
-            }
-        };
-
-        testRoute();
         const fetchLinks = async () => {
             try {
                 setLoadingLinks(true);
                 const response = await axios.get(`${API_BASE_URL}/meet-results-api/links/fetch-links`);
+                // const response = await axios.get(`${API_BASE_URL}/links/fetch-links`);
                 setPopularMeets(response.data.links.slice(0, 5));
             } catch (err) {
                 console.error('Failed to fetch links:', err);

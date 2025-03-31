@@ -20,13 +20,14 @@ app.use(express_1.default.json());
 //     console.log('API test route hit');
 //     res.json({ message: 'Server is running!' });
 // });
-// app.get('/', (_req: Request, res: Response) => {
-//     res.json({ message: 'Lambda function is running!' });
-// });
+app.get('/test', (_req, res) => {
+    res.json({ message: 'Lambda function is running!' });
+});
 // app.get('/fetch-links', (_req: Request, res: Response) => {
 //     res.json({ message: 'Yurt!' });
 // });
 // Routes
+// app.use('/', linksRoutes);
 app.use('/links', links_1.default);
 app.use('/scrape', scraper_1.default);
 // Serve React app for all other routes

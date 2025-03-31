@@ -20,15 +20,16 @@ app.use(express.json());
 //     res.json({ message: 'Server is running!' });
 // });
 
-// app.get('/', (_req: Request, res: Response) => {
-//     res.json({ message: 'Lambda function is running!' });
-// });
+app.get('/test', (_req: Request, res: Response) => {
+    res.json({ message: 'Lambda function is running!' });
+});
 
 // app.get('/fetch-links', (_req: Request, res: Response) => {
 //     res.json({ message: 'Yurt!' });
 // });
 
 // Routes
+// app.use('/', linksRoutes);
 app.use('/links', linksRoutes);
 app.use('/scrape', scraperRoutes);
 
