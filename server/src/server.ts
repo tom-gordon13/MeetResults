@@ -29,7 +29,7 @@ app.use(express.json());
 // });
 
 // Routes
-app.use('/', linksRoutes);
+app.use('/links', linksRoutes);
 app.use('/scrape', scraperRoutes);
 
 // Serve React app for all other routes

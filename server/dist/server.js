@@ -27,7 +27,7 @@ app.use(express_1.default.json());
 //     res.json({ message: 'Yurt!' });
 // });
 // Routes
-app.use('/', links_1.default);
+app.use('/links', links_1.default);
 app.use('/scrape', scraper_1.default);
 // Serve React app for all other routes
 // app.get('*', (req, res) => {
