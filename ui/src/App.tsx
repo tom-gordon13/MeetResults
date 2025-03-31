@@ -81,7 +81,7 @@ export const App = () => {
         const fetchLinks = async () => {
             try {
                 setLoadingLinks(true);
-                const response = await axios.get(`${API_BASE_URL}/meet-results-api/fetch-links`);
+                const response = await axios.get(`${API_BASE_URL}/meet-results-api/links/fetch-links`);
                 setPopularMeets(response.data.links.slice(0, 5));
             } catch (err) {
                 console.error('Failed to fetch links:', err);
